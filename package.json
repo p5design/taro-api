@@ -1,0 +1,31 @@
+{
+  "name": "taro-api",
+  "version": "0.0.1",
+  "description": "快速创建API接口（Taro版）",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/p5design/taro-api.git"
+  },
+  "keywords": [
+    "taro",
+    "tarojs",
+    "http",
+    "axios",
+    "api"
+  ],
+  "author": "pangwu86",
+  "license": "Apache License 2.0",
+  "dependencies": {
+    "@tarojs/taro": "3.3.3",
+    "deepmerge": "^4.2.2",
+    "qs": "^6.10.1"
+  },
+  "bugs": {
+    "url": "https://github.com/p5design/taro-api/issues"
+  },
+  "homepage": "https://github.com/p5design/taro-api#readme"
+}
