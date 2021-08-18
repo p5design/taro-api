@@ -2,50 +2,9 @@
 import $http from "./utils/http";
 import $request from "./utils/request";
 
-// 放置 queryString 中
-function setTokenInQueryString(options, tokenName, getToken) {
-  if (getToken()) {
-    let _queryString = {};
-    _queryString[tokenName] = getToken();
-    options.url = urlQuery(options.url, _queryString);
-  }
-}
-
-// 放置 header 中
-function setTokenInHeader(options, tokenName, getToken) {
-  if (getToken()) {
-    let _header = {};
-    _header[tokenName] = getToken();
-    options.header = Object.assign(options.header || {}, _header);
-  }
-}
-
-// 处理返回结果
-function handleRespData(respData) {
-  if (!respData._err) {
-    return Promise.resolve(respData);
-  }
-  // 错误返回如何处理
-  else {
-    showErrorMsg("网络错误", respData.msg);
-    Promise.resolve(null);
-  }
-}
-
-// 提示错误信息
-function showErrorMsg(title, content, callback) {
-  Taro.showModal({
-    title,
-    content,
-    showCancel: false,
-    success: function (res) {
-      callback && callback();
-    },
-  });
-}
-
 /**
- * 创建接口基础配置信息
+ * 创建接口基础配置信息, 共 5 个方法。
+ * 根据业务需求，覆盖对应实现即可
  *
  * @param {*} baseUrl
  * @param {*} tokenName
@@ -75,19 +34,44 @@ const createAPIBaseConf = (
     },
     // 请求前置方法
     handleOptions(options) {
-      setTokenInHeader(options, tokenName, getToken);
+      if (getToken()) {
+        let _header = {};
+        _header[tokenName] = getToken();
+        options.header = Object.assign(options.header || {}, _header);
+      }
     },
     // 请求后置方法
     handleReturn(respData) {
-      return handleRespData(respData);
+      // 错误
+      if (respData._err) {
+        Taro.showModal({
+          title: "网络错误",
+          content: respData.msg,
+          showCancel: false,
+          success: function (res) {},
+        });
+        return Promise.resolve(null);
+      }
+      // 正常
+      return Promise.resolve(respData);
     },
   };
   return defaultConf;
 };
 
-// 创建 API
+/**
+ * 根据 基础配置 与 URL配置，创建 API 实例。
+ *
+ * @param {*} baseConf
+ * @param {*} urlConf
+ * @returns
+ */
 const createAPI = (baseConf, urlConf) => {
-  const api = {};
+  // baseConf 记录在实例上
+  const api = {
+    $conf: baseConf,
+  };
+
   // 遍历并初始化接口配置
   for (let [moduleName, moduleConf] of Object.entries(urlConf)) {
     api[moduleName] = {};
@@ -144,47 +128,9 @@ const createAPI = (baseConf, urlConf) => {
   return api;
 };
 
-/**
- * 遍历模块接口，创建接口 URL 配置信息
- *
- * @param {*} modulePath 模块路径
- * @param {*} moduleFileSuffix 模块文件后缀
- * @returns
- */
-const createAPIUrlConf = (
-  modulePath = "./modules",
-  moduleFileSuffix = "js"
-) => {
-  // 读取 module 信息
-  let modulesFiles = require.context(
-    modulePath,
-    true,
-    new RegExp("." + moduleFileSuffix + "$")
-  );
-  const modules = modulesFiles.keys().reduce((_modules, modulePath) => {
-    const moduleName = modulePath.replace(/^\.\/(.*)\.\w+$/, "$1");
-    const value = modulesFiles(modulePath);
-    _modules[moduleName] = value.default;
-    return _modules;
-  }, {});
-
-  // 整合成一个 urlConf
-  // const urlConf = {};
-  // for (let m in modules) {
-  //   let moduleConf = modules[m];
-  //   Object.assign(urlConf, moduleConf);
-  // }
-  // return urlConf;
-  return modules;
-};
-
-let taroAPI = {
-  createAPIUrlConf,
-  createAPIBaseConf,
+export default {
   createAPI,
+  createAPIBaseConf,
   http: $http,
   request: $request,
 };
-
-module.exports = taroAPI;
-module.exports.default = module.exports;
