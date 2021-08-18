@@ -1,6 +1,6 @@
 {
   "name": "taro-api",
-  "version": "0.0.4",
+  "version": "0.1.2",
   "description": "快速创建API接口（Taro版）",
   "main": "index.js",
   "scripts": {

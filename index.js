@@ -1,6 +1,10 @@
 // 基于 http 与 urlConf 创建的 api 接口
-import $http from "./utils/http";
-import $request from "./utils/request";
+import http from "./utils/http";
+import request from "./utils/request";
+
+// 依赖接口
+export const $http = http;
+export const $request = request;
 
 /**
  * 创建接口基础配置信息, 共 5 个方法。
@@ -11,13 +15,13 @@ import $request from "./utils/request";
  * @param {*} getToken
  * @returns
  */
-const createAPIBaseConf = (
+export function createBaseConf(
   baseUrl = "",
   tokenName = "",
   getToken = () => {
     return "";
   }
-) => {
+) {
   // 默认配置
   let defaultConf = {
     // 获取 URL 前缀接口
@@ -35,6 +39,7 @@ const createAPIBaseConf = (
     // 请求前置方法
     handleOptions(options) {
       if (getToken()) {
+        // token 放入 header 中
         let _header = {};
         _header[tokenName] = getToken();
         options.header = Object.assign(options.header || {}, _header);
@@ -42,10 +47,10 @@ const createAPIBaseConf = (
     },
     // 请求后置方法
     handleReturn(respData) {
-      // 错误
+      // 处理报错的请求
       if (respData._err) {
         Taro.showModal({
-          title: "网络错误",
+          title: "发生错误",
           content: respData.msg,
           showCancel: false,
           success: function (res) {},
@@ -57,7 +62,7 @@ const createAPIBaseConf = (
     },
   };
   return defaultConf;
-};
+}
 
 /**
  * 根据 基础配置 与 URL配置，创建 API 实例。
@@ -66,11 +71,8 @@ const createAPIBaseConf = (
  * @param {*} urlConf
  * @returns
  */
-const createAPI = (baseConf, urlConf) => {
-  // baseConf 记录在实例上
-  const api = {
-    $conf: baseConf,
-  };
+export function createAPI(baseConf, urlConf) {
+  const api = {};
 
   // 遍历并初始化接口配置
   for (let [moduleName, moduleConf] of Object.entries(urlConf)) {
@@ -126,11 +128,12 @@ const createAPI = (baseConf, urlConf) => {
   }
 
   return api;
-};
+}
 
+// 设置默认返回
 export default {
   createAPI,
-  createAPIBaseConf,
-  http: $http,
-  request: $request,
+  createBaseConf,
+  $http,
+  $request,
 };
