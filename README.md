@@ -1,6 +1,6 @@
 # taro-api
 
-快速创建网络请求API接口（Taro 版）
+快速创建API接口（Taro 版）
 
 ## 快速开始
 
@@ -26,9 +26,9 @@ yarn add taro-api
 $TARO-PROJECT/                         # TARO 项目根目录
   |-- src/                             # src 目录
   |   |-- api/                         # api 目录
-  |   |   |-- modules/                 # 接口模块 目录
+  |   |   |-- modules/                 # 接口 模块目录
   |   |   |   |-- test.js              # 接口【test】
-  |   |   |-- conf.js                  # api 配置信息
+  |   |   |-- conf.js                  # api 配置文件
   |   |   |-- index.js                 # api 主文件
 ```
 
@@ -67,9 +67,7 @@ const urlConf = {
 // 引入 api 接口
 import $api from "src/api/index"
 
-// 接口格式：[接口对象].[模块名称].[方法名称]({..参数..})
-// 接口返回：promise 对象
-// 例如：访问 test 模块下的 helloWorld 方法
+// 访问 test 模块下的 helloWorld 方法
 $api.test.helloWorld({ a: 1 }).then((data) => {
   console.log("resp-data: " + JSON.stringify(data));
 });
