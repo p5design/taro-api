@@ -127,9 +127,17 @@ export function createAPI(baseConf, urlConf, mergeModule = false) {
     }
   }
 
-  // 整合所有模块接口到顶层接口
-  // 如有重名，则覆盖
+  // 整合所有模块接口到顶层接口。
+  // 注意：如有重名函数，则覆盖前一个
   if (mergeModule) {
+    const apiNoModule = {};
+    Object.keys(api).forEach((moduleNm) => {
+      let mApi = api[moduleNm];
+      Object.keys(mApi).forEach((moduleApiNm) => {
+        apiNoModule[moduleApiNm] = mApi[moduleApiNm];
+      });
+    });
+    return apiNoModule;
   }
 
   return api;
