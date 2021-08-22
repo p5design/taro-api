@@ -69,9 +69,10 @@ export function createBaseConf(
  *
  * @param {*} baseConf
  * @param {*} urlConf
+ * @param {*} mergeModule
  * @returns
  */
-export function createAPI(baseConf, urlConf) {
+export function createAPI(baseConf, urlConf, mergeModule = false) {
   const api = {};
 
   // 遍历并初始化接口配置
@@ -93,7 +94,7 @@ export function createAPI(baseConf, urlConf) {
 
           // 前置处理
           if (uc.before) {
-            uc.before.call(this, options);
+            uc.before.call(uc, options);
           }
 
           // 如果是自定义方法，直接调用
@@ -113,9 +114,8 @@ export function createAPI(baseConf, urlConf) {
 
           // 后置处理
           if (uc.after) {
-            let curr = this;
             return reqReturn.then((respData) => {
-              return uc.after.call(curr, respData);
+              return uc.after.call(uc, respData);
             });
           } else {
             return reqReturn;
@@ -125,6 +125,11 @@ export function createAPI(baseConf, urlConf) {
         }
       };
     }
+  }
+
+  // 整合所有模块接口到顶层接口
+  // 如有重名，则覆盖
+  if (mergeModule) {
   }
 
   return api;

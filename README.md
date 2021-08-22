@@ -95,7 +95,7 @@ $api.test.helloWorld({ a: 1 }).then((data) => {
 
 ### handleOptions(options) 方法详解
 
-`options` 对象属性如下：
+`options` 默认为空对象，可以覆写的对象属性如下：
 
 | 属性名  | 类型   | 说明                                        |
 | ------- | ------ | ------------------------------------------- |
@@ -106,10 +106,11 @@ $api.test.helloWorld({ a: 1 }).then((data) => {
 | data    | object | 存放 post 请求参数                          |
 | header  | object | http 的 header，一般用来存放 token 一类数据 |
 
+根据不同的请求方式，接口会自动创建对应的请求参数，`options` 可以用来针对每个接口对这些参数进行定制化修改。
 
 例如：
 
-```json
+```bash
 {
   baseURL: "https://xxxxx.com/api",
   url: "/test/helloworld",
@@ -119,11 +120,11 @@ $api.test.helloWorld({ a: 1 }).then((data) => {
   header: {
     "Content-Type": "application/json;charset=UTF-8",
     "Token": "xxxxx"
-  },
+  }
 }
 ```
 
-`handleOptions` 的工作就是在发送请求前，对请求参数做处理，默认实现如下：
+`handleOptions` 的工作就是在发送请求前，对请求参数做处理，默认实现为在 `header` 中加入 `token`。
 
 ```js
 function handleOptions (options) {
@@ -135,6 +136,8 @@ function handleOptions (options) {
   }
 }
 ```
+
+如果不同的请求需要设置的参数不同，可以将对应方法增加到 `baseConf` 对象中，然后在接口的 `before` 参数上填充即可。
 
 ### handleReturn(respData) 方法详解
 
@@ -182,6 +185,7 @@ function handleReturn(respData) {
 }
 ```
 
+如果有不同的响应需要处理，可以将对应方法增加到 `baseConf` 对象中，然后在接口的 `after` 参数上填充即可。
 
 ## 自定义接口
 
