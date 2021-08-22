@@ -79,7 +79,7 @@ $api.test.helloWorld({ a: 1 }).then((data) => {
 
 配置文件为 `conf.js`, 主要在 `请求发送前` 与 `响应收到后` 这两个时间节点预留了钩子方法，方便进行定制。
 
-具体创建 `基础配置信息` 请参考实例代码 `example/conf.js`，其中 `createBaseConf` 方法，返回的对象中包含以下五个函数，根据业务需求重写对应方法即可。
+具体创建 `基础配置信息` 请参考示例代码 `example/conf.js`，其中 `createBaseConf` 方法，返回的对象中包含以下五个函数，根据业务需求重写对应方法即可。
 
 
 | 触发时机   | 方法                   | 参数说明           | 功能                           | 默认实现                                 |
@@ -185,7 +185,128 @@ function handleReturn(respData) {
 
 ## 自定义接口
 
-## 更底层的访问接口
+`modules` 目录中的文件，每一个被当做单独的一个模块，并且以文件名（不带.后缀）作为模块的名称。
+
+具体创建 `接口信息` 请参考示例代码 `example/modules/test.js`，其中 `urlConf` 的具体配置规则请参考下文。
+
+### 模块下的接口
+
+`urlConf` 对象中的每个方法对应一个 API 接口，方法名尽量起的与接口含义一致，例如：
+
+```js
+// 文件 modules/user.js 
+
+const urlConf = {
+  login: {/* 接口详细配置 */},
+  sign:  {/* 接口详细配置 */},
+};
+```
+
+使用上面定义接口的也很简单
+
+
+```js
+// 引入 api 接口
+import $api from "src/api/index"
+
+// 访问 loign 方法
+$api.user.login({/* 参数 */ }).then((data) => {/* 处理返回结果 */});
+
+// 访问 sign 方法
+$api.user.sign({/* 参数 */ }).then((data) => {/* 处理返回结果 */});
+
+```
+
+
+
+### 接口详细配置
+
+接口包含以下几个参数：
+
+| 属性名      | 类型                   | 必填 | 默认值           | 说明                                |
+| ----------- | ---------------------- | ---- | ---------------- | ----------------------------------- |
+| url         | `string`               | 是   | 无               | 接口路径，支持 `RESETful API` 写法  |
+| baseURL     | `string`               | 否   | `conf.js` 中提供 | 接口前置，包含服务器地址            |
+| method      | `string` or `function` | 否   | `get`            | 常见的请求方法与特殊的 `'function'` |
+| before      | `function`             | 否   | 无               | 请求发送前触发                      |
+| after       | `function`             | 否   | 无               | 响应收到后触发                      |
+| showLoading | `boolean`              | 否   | `false`          | 自动显示/隐藏加载提示               |
+
+1. `url` 即改接口的路径，同样支持 `RESETful API`
+
+2. `baseURL` 默认使用 `conf.js` 中的 `getBaseUrl` 方法返回值进行填充，主要用于使用第三方 API 接口时，覆写该值。
+
+3. `method` 支持常见的 `get`, `post`, `put`, `delete`, 默认都以 `json` 格式提交数据。 如需使用 `form` 表单格式，请使用 `postForm`。
+   
+   在一些特殊情况下，比如获取某些资源文件（例如图片，视频等），可以将一个方法赋值给 `method` 参数，该方法会被调用并拿到接口对应的上下文，方便你拼接 拼接一个 `url` 字符串并返回。
+
+4. `before` 请求发送前触发该方法，并将请求配置 `options` 参数传入，可以根据业务需要选项是否设置该方法，一般会设置 `conf.js` 中 `handleOptions` 方法。 
+
+5. `after` 响应收到后触发该方法，并将预处理后的 `respData` 参数传入，可以根据业务需要选项是否设置该方法，一般会设置 `conf.js` 中 `handleReturn` 方法。 
+
+6. `showLoading` 是否自动的显示加载提示，提示具体实现在 `conf.js` 中由 `showLoading` 和 `hideLoading` 定义。
+
+
+下面为各种使用情况的例子，可以作为参考。
+
+
+```js
+// 接口定义
+// 文件 modules/user.js 
+import baseConf from "../conf";
+let { handleOptions, handleReturn } = baseConf;
+
+// login，sign 为未登录状态接口，无需设置 token，所以没有设置 before 参数
+
+const urlConf = {
+  // GET 请求
+  login: {
+    url: "/user/login",
+    after: handleReturn
+  },
+  // POST 请求
+  sign:  {
+    url: "/user/sign",
+    method: "post",
+    after: handleReturn
+  },
+  // POST 请求, FORM 表单格式提交数据
+  addUser:  {
+    url: "/user/add",
+    method: "postForm",
+    before: handleOptions,
+    after: handleReturn,
+  },
+  // PUT 请求
+  updateUser:  {
+    url: "/user/update",
+    method: "put",
+    before: handleOptions,
+    after: handleReturn,
+  },
+  // DELETE 请求 
+  deleteUser: {
+    url: "/user/delete",
+    method: "delete",
+    before: handleOptions,
+    after: handleReturn,
+  },
+  // GET 请求，RESTful API 格式
+  getUserById: {
+    url: "/user/get/${userId}",
+    before: handleOptions,
+    after: handleReturn,
+  },
+  // 第三方登陆接口，比如微信登陆
+  loginByWeixin: {
+    baseURL: "https://api.weixin.com/xxxx",
+    url: "/login/code",
+    method: "post",
+    before: handleOptions,
+    after: handleReturn,
+  }
+};
+```
 
 
 
